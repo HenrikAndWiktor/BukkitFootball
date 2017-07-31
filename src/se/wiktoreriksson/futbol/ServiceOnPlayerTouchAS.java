@@ -10,6 +10,9 @@ import org.bukkit.event.player.PlayerToggleSprintEvent;
 
 import java.util.List;
 
+/**
+ * Listener kick
+ */
 public class ServiceOnPlayerTouchAS implements Listener {
     public void onPTAS(PlayerToggleSprintEvent pme){
         List<Entity> ce=pme.getPlayer().getNearbyEntities(1,1,1);
@@ -37,11 +40,11 @@ public class ServiceOnPlayerTouchAS implements Listener {
                 }, 2000);
             };
             new java.util.Timer().schedule(new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            r.run();
-                        }
-                    }, 2000);
+                                    @Override
+                                    public void run() {
+                                        r.run();
+                                    }
+                                }, 2000);
         }
     }
 }
