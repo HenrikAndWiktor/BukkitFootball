@@ -6,17 +6,17 @@ import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.List;
 
 /**
  * Listener kick
  */
-public class ServiceOnPlayerTouchAS implements Listener {
-    public void onPTAS(PlayerToggleSprintEvent pme){
+public class MyListener implements Listener {
+    public void onPTAS(PlayerMoveEvent pme){
         List<Entity> ce=pme.getPlayer().getNearbyEntities(1,1,1);
-        if((!ce.isEmpty())&&(ce.get(0) instanceof ArmorStand)&&(ce.get(0).getName().equals("ASFUTBAL"))){
+        if((!ce.isEmpty())&&(ce.get(0) instanceof ArmorStand)&&(ce.get(0).getName().equals("ASFUTBAL"))&&pme.getPlayer().isSprinting()){
             CraftArmorStand as=(CraftArmorStand)ce.get(0);
             NBTTagCompound compound = new NBTTagCompound();
             net.minecraft.server.v1_12_R1.Entity e = ((CraftEntity) as).getHandle();

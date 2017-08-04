@@ -20,7 +20,7 @@ public class FootballMain extends JavaPlugin{
      */
     @Override
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(new ServiceOnPlayerTouchAS(),this);
+        getServer().getPluginManager().registerEvents(new MyListener(),this);
     }
 
     /**
