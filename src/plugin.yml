@@ -2,6 +2,7 @@ name: Football
 author: Wiktor Eriksson
 description: "A football/soccer plugin for you guys."
 version: 1.0.1
+main: se.wiktoreriksson.futbol.FootballMain
 commands:
   football:
     usage: /football
