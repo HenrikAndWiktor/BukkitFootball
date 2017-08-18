@@ -1,11 +1,17 @@
 package se.wiktoreriksson.futbol;
 
+import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_12_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArmorStand;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -27,8 +33,10 @@ public class FootballMain extends JavaPlugin{
      * @param p Cmd Executor
      * @return Football
      * @see #f(Player, double, double, double)
+     * @see #f(Player, double, double, double, String)
+     * @see #f(Location, String)
      */
-    protected Entity f(Player p) {
+    public Entity f(Player p) {
         return f(p,p.getLocation().getX(),p.getLocation().getY()+10,p.getLocation().getZ());
     }
 
@@ -39,6 +47,7 @@ public class FootballMain extends JavaPlugin{
      * @param z Spawn location Z
      * @return Football
      * @see #f(Player, double, double, double, String)
+     * @see #f(Location, String)
      */
     protected Entity f(Player p,double x,double y,double z) {
         return f(p, x, y, z,"ASFUTBAL");
@@ -49,7 +58,7 @@ public class FootballMain extends JavaPlugin{
      * @param x Spawn location X
      * @param y Spawn location Y
      * @param z Spawn location Z
-     * @param n Football entity name. To use as a miniature, set n to something other than "ASFUTBAL".
+     * @param n Football entity name. To use eas a miniature, set n to something other than "ASFUTBAL".
      * @return Football
      * @see #f(Location, String)
      */
@@ -59,15 +68,30 @@ public class FootballMain extends JavaPlugin{
 
     /**
      * @param loc Location
-     * @param s Football entity name. To use as a miniature, set n to something other than "ASFUTBAL".
+     * @param s Football entity name. To use eas a miniature, set n to something other than "ASFUTBAL".
      * @return Football
      */
     private Entity f(Location loc,String s) {
-        ArmorStand as = loc.getWorld().spawn(loc, ArmorStand.class);
+        EntityArmorStand eas = new EntityArmorStand(((CraftWorld)loc.getWorld()).getHandle());
+        NBTTagCompound nbtmain = new NBTTagCompound();
+        NBTTagCompound nbt1 = new NBTTagCompound();
+        NBTTagCompound nbt2 = new NBTTagCompound();
+        NBTTagList nbt3 = new NBTTagList();
+        NBTTagCompound nbt4 = new NBTTagCompound();
+        NBTTagCompound nbt5 = new NBTTagCompound();
+        nbt4.set("Value",new NBTTagString("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGU0YTcwYjdiYmNkN2E4YzMyMmQ1MjI1MjA0OTFhMjdlYTZiODNkNjBlY2Y5NjFkMmI0ZWZiYmY5ZjYwNWQifX19"));
+        nbt1.set("id", new NBTTagString("skull"));
+        nbt1.set("Count", new NBTTagInt(1));
+        nbt2.set("id", new NBTTagString("b74e58ec-4460-44b9-b0ca-2a1b9f331523"));
+        nbt3.add(nbt4);
+        nbt5.set("textures",nbt3);
+        nbt2.set("Properties",nbt5);
+        nbtmain.set("Item", nbt1);
+        nbtmain.set("SkullOwner",nbt2);
+        ArmorStand as = new CraftArmorStand((CraftServer) getServer(),eas);
         as.setCustomName(s);
         as.setVisible(false);
         as.setInvulnerable(true);
-        getServer().dispatchCommand(getServer().getConsoleSender(),"/replaceitem entity @e[type=armor_stand,name="+s+"] slot.armor.feet skull 1 3 {SkullOwner:{Id:\"b74e58ec-4460-44b9-b0ca-2a1b9f331523\",Properties:{textures:[{Value:\"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGU0YTcwYjdiYmNkN2E4YzMyMmQ1MjI1MjA0OTFhMjdlYTZiODNkNjBlY2Y5NjFkMmI0ZWZiYmY5ZjYwNWQifX19\"}]}}}");
         return as;
     }
 
@@ -77,9 +101,9 @@ public class FootballMain extends JavaPlugin{
             case "football":
                 if (sender instanceof Player) {
                     Player p=(Player)sender;
-                    ArmorStand as = (ArmorStand)f(p);
-                    Location asl = as.getLocation();
-                    p.sendMessage(as.getName()+" is your armor stand football summoned at x: "+asl.getX()+", y: "+asl.getY()+", z: "+asl.getZ());
+                    ArmorStand eas = (ArmorStand)f(p);
+                    Location easl = eas.getLocation();
+                    p.sendMessage(eas.getName()+" is your armor stand football summoned at x: "+easl.getX()+", y: "+easl.getY()+", z: "+easl.getZ());
                 }
         }
         return true;
