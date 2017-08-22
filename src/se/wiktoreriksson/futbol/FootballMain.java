@@ -1,18 +1,19 @@
 package se.wiktoreriksson.futbol;
 
 import net.minecraft.server.v1_12_R1.*;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_12_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArmorStand;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Wiktor Eriksson on 2017-07-28.
@@ -21,12 +22,66 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @since 1.0.1
  */
 public class FootballMain extends JavaPlugin{
+    /*Bg goalcheck*/ Thread t = null;
     /**
      * The enable method
      */
     @Override
     public void onEnable() {
+        t=new Thread(()->{
+                org.bukkit.scoreboard.Scoreboard s = Bukkit.getScoreboardManager().getNewScoreboard();
+                s.registerNewObjective("GOALB","dummy");
+                s.registerNewObjective("GOALR","dummy");
+                while (Bukkit.getServer().getPluginManager().getPlugin("Football").isEnabled()) {
+                    List<Entity> ents=new ArrayList<>();
+                    List<ArmorStand> futs=new ArrayList<>();
+                    for (org.bukkit.World w : Bukkit.getServer().getWorlds()) {
+                        ents.addAll(w.getEntities().stream().collect(Collectors.toList()));
+                    }
+                    futs.addAll(
+                            ents.stream().filter(
+                                    (Entity e) -> e instanceof ArmorStand && e.getName().equals("ASFUTBAL")
+                            ).map(
+                                    (Entity e) -> (ArmorStand) e
+                            ).collect(
+                                    Collectors.toList()
+                            )
+                    );
+                    for (ArmorStand a : futs) {
+                        Location loc = a.getLocation();
+                        loc.setY(loc.getBlockY() - 2);
+                        org.bukkit.Material m = a.getWorld().getBlockAt(loc).getType();
+                        boolean goalr = false;
+                        boolean goalb = false;
+                        switch (m) {
+                            case BARRIER:
+                                goalb = true;
+                            case STRUCTURE_VOID:
+                                goalr = true;
+                            default:
+                        }
+                        if (goalr) {
+                            List<Player> lp = new ArrayList<>(Bukkit.getOnlinePlayers());
+                            lp.stream().filter(p -> s.getTeam("RED").hasPlayer(p)).forEach(p -> s.getObjective("GOALR").getScore(p).setScore(
+                                    s.getObjective("GOALR").getScore(p).getScore() + 1
+                            ));
+                        }
+                        if (goalb) {
+                            List<Player> lp = new ArrayList<>(Bukkit.getOnlinePlayers());
+                            lp.stream().filter(p -> s.getTeam("BLUE").hasPlayer(p)).forEach(p -> s.getObjective("GOALB").getScore(p).setScore(
+                                    s.getObjective("GOALB").getScore(p).getScore() + 1
+                            ));
+                        }
+                    }
+                }
+        });
         getServer().getPluginManager().registerEvents(new MyListener(),this);
+        t.start();
+    }
+
+    @Override
+    public void onDisable() {
+        t.interrupt();
     }
 
     /**
@@ -72,7 +127,6 @@ public class FootballMain extends JavaPlugin{
      * @return Football
      */
     private Entity f(Location loc,String s) {
-        EntityArmorStand eas = new EntityArmorStand(((CraftWorld)loc.getWorld()).getHandle());
         NBTTagCompound nbtmain = new NBTTagCompound();
         NBTTagCompound nbt1 = new NBTTagCompound();
         NBTTagCompound nbt2 = new NBTTagCompound();
@@ -88,7 +142,16 @@ public class FootballMain extends JavaPlugin{
         nbt2.set("Properties",nbt5);
         nbtmain.set("Item", nbt1);
         nbtmain.set("SkullOwner",nbt2);
-        ArmorStand as = new CraftArmorStand((CraftServer) getServer(),eas);
+        ArmorStand as = loc.getWorld().spawn(loc,ArmorStand.class);
+        as.setBoots(
+                new ItemStack(
+                        CraftItemStack.asBukkitCopy(
+                                new net.minecraft.server.v1_12_R1.ItemStack(
+                                        nbtmain
+                                )
+                        )
+                )
+        );
         as.setCustomName(s);
         as.setVisible(false);
         as.setInvulnerable(true);
@@ -101,9 +164,9 @@ public class FootballMain extends JavaPlugin{
             case "football":
                 if (sender instanceof Player) {
                     Player p=(Player)sender;
-                    ArmorStand eas = (ArmorStand)f(p);
-                    Location easl = eas.getLocation();
-                    p.sendMessage(eas.getName()+" is your armor stand football summoned at x: "+easl.getX()+", y: "+easl.getY()+", z: "+easl.getZ());
+                    ArmorStand as = (ArmorStand)f(p);
+                    Location asl = as.getLocation();
+                    p.sendMessage(as.getName()+" is your armor stand football summoned at x: "+asl.getX()+", y: "+asl.getY()+", z: "+asl.getZ());
                 }
         }
         return true;
